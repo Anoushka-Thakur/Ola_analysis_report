@@ -6,8 +6,10 @@ import plotly.express as px
 import datetime
 import streamlit.components.v1 as components
 
-# --- Load data (adjust path if needed) ---
-DATA_PATH = "C:\\Users\\anous\\OneDrive\\PROJECTS\\OLA RIDES ANALYSIS\\cleaned_ola_rides.csv"
+# --- Load data (Adjusted path for deployment) ---
+# CRITICAL CHANGE: DATA_PATH is set to the filename, assuming the CSV is 
+# in the SAME directory as this Python script.
+DATA_PATH = "cleaned_ola_rides.csv" 
 @st.cache_data
 def load_data(path=DATA_PATH):
     df = pd.read_csv(path)
