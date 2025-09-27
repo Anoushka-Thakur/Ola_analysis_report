@@ -1,0 +1,144 @@
+# ola_analysis_app.py (patched version)
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import streamlit.components.v1 as components
+
+# ========= LOAD DATA =========
+DATA_PATH = "C:\\Users\\anous\\OneDrive\\PROJECTS\\OLA RIDES ANALYSIS\\ola_rides\\cleaned_ola_rides.csv"
+
+@st.cache_data
+def load_data(path=DATA_PATH):
+    df = pd.read_csv(path)
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+    # Derived columns
+    df["Ride_Date"] = df["Date"].dt.date
+    df["Hour"] = df["Date"].dt.hour
+    df["DayOfWeek"] = df["Date"].dt.day_name()
+    return df
+
+df = load_data()
+
+st.set_page_config(page_title="Ola Rides Dashboard", layout="wide")
+st.title("🚖 Ola Rides Analytics Dashboard")
+
+# ========= SIDEBAR FILTERS =========
+st.sidebar.header("🔎 Filters")
+
+min_date, max_date = df["Date"].min().date(), df["Date"].max().date()
+date_range = st.sidebar.date_input("Ride Date Range", (min_date, max_date))
+
+vehicle_types = sorted(df["Vehicle_Type"].unique())
+sel_vehicle = st.sidebar.multiselect("Vehicle Type", vehicle_types, vehicle_types)
+
+statuses = sorted(df["Booking_Status"].unique())
+sel_status = st.sidebar.multiselect("Booking Status", statuses, statuses)
+
+payments = sorted(df["Payment_Method"].unique())
+sel_payment = st.sidebar.multiselect("Payment Method", payments, payments)
+
+search_text = st.sidebar.text_input("Search (Booking_ID / Customer_ID / Location)")
+
+# Apply filters
+start_date, end_date = date_range
+mask = (
+    (df["Ride_Date"] >= start_date) &
+    (df["Ride_Date"] <= end_date) &
+    (df["Vehicle_Type"].isin(sel_vehicle)) &
+    (df["Booking_Status"].isin(sel_status)) &
+    (df["Payment_Method"].isin(sel_payment))
+)
+
+if search_text:
+    search_mask = (
+        df["Booking_ID"].astype(str).str.contains(search_text, case=False) |
+        df["Customer_ID"].astype(str).str.contains(search_text, case=False) |
+        df["Pickup_Location"].astype(str).str.contains(search_text, case=False) |
+        df["Drop_Location"].astype(str).str.contains(search_text, case=False)
+    )
+    mask = mask & search_mask
+
+filtered = df[mask]
+
+# ========= KPI BOXES =========
+st.markdown("### 📊 Key Performance Indicators")
+
+def kpi_box(title, value, color="#2E86C1"):
+    st.markdown(
+        f"""
+        <div style="background:{color};padding:20px;border-radius:10px;
+                    text-align:center;color:white;margin-bottom:10px;">
+            <div style="font-size:20px;font-weight:500;">{title}</div>
+            <div style="font-size:28px;font-weight:bold;">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    kpi_box("Total Rides", f"{len(filtered):,}", "#27AE60")
+with col2:
+    kpi_box("Successful Rides", f"{filtered[filtered['Booking_Status']=='Success'].shape[0]:,}", "#2980B9")
+with col3:
+    kpi_box("Canceled Rides", f"{filtered[filtered['Booking_Status'].str.contains('Canceled')].shape[0]:,}", "#C0392B")
+with col4:
+    kpi_box("Revenue", f"₹{filtered['Booking_Value'].sum():,}", "#8E44AD")
+
+st.markdown("---")
+
+# ========= QUICK VISUALS =========
+if not filtered.empty:
+    # Ride volume over time
+    rides_over_time = filtered.groupby("Ride_Date").size().reset_index(name="count")
+    fig1 = px.line(rides_over_time, x="Ride_Date", y="count", title="📈 Ride Volume Over Time")
+    st.plotly_chart(fig1, use_container_width=True)
+
+    # Booking status breakdown
+    status_counts = filtered["Booking_Status"].value_counts().reset_index()
+    status_counts.columns = ["Booking_Status", "count"]
+    fig2 = px.pie(status_counts, names="Booking_Status", values="count", title="🟢 Booking Status Breakdown")
+    st.plotly_chart(fig2, use_container_width=True)
+
+    # Cancellation reasons
+    cancel_df = filtered[filtered["Booking_Status"].str.contains("Canceled")]
+    if not cancel_df.empty:
+        reason_counts = cancel_df.groupby(["Booking_Status", "Incomplete_Rides_Reason"]).size().reset_index(name="count")
+        fig3 = px.bar(reason_counts, x="Incomplete_Rides_Reason", y="count", color="Booking_Status",
+                      title="❌ Cancellation Reasons (Customer vs Driver)")
+        fig3.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig3, use_container_width=True)
+
+st.markdown("---")
+
+# ========= POWER BI EMBED =========
+st.subheader("📊 Power BI Report Embed")
+
+embed_mode = st.selectbox("Embed method", ["None", "iframe (publish-to-web)", "secure-token (sample HTML)"])
+
+if embed_mode == "iframe (publish-to-web)":
+    embed_url = st.text_input("Paste Publish-to-web iframe src URL")
+    if embed_url:
+        iframe_html = f"""
+        <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+          <iframe src="{embed_url}" frameborder="0" allowFullScreen="true"
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+        </div>
+        """
+        components.html(iframe_html, height=650)
+
+elif embed_mode == "secure-token (sample HTML)":
+    workspace_id = st.text_input("Workspace (Group) ID")
+    report_id = st.text_input("Report ID")
+    embed_token = st.text_input("Embed token", type="password")
+    if st.button("Render Secure Embed"):
+        secure_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8" />
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/powerbi-client/2.20.0/powerbi.min.js"></script>
+        </head>
+        <body>
+          <div id="reportContainer" style="height:600
