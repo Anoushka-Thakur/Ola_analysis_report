@@ -1,9 +1,9 @@
-OLA Rides Analysis – Interactive Dashboard
+## OLA Rides Analysis – Interactive Dashboard
 
-An interactive data analytics and visualization project built using Python, Pandas, Streamlit, and Plotly to analyze OLA ride data.
-The dashboard allows users to explore ride trends, booking behavior, vehicle usage, and payment patterns through dynamic filters and visualizations.
+ An interactive data analytics and visualization project built using Python, Pandas, Streamlit, and Plotly to analyze OLA ride data.
+ The dashboard allows users to explore ride trends, booking behavior, vehicle usage, and payment patterns through dynamic filters and visualizations.
 
- Project Overview
+ ### Project Overview
 
 This project analyzes cleaned OLA ride data to uncover actionable insights such as:
 
@@ -19,7 +19,7 @@ Customer behavior and payment preferences
 
 The application is deployed using Streamlit, enabling real-time filtering and interactive exploration.
 
- Tech Stack
+### Tech Stack
 
 Python
 
@@ -31,14 +31,10 @@ Plotly Express – Data visualization
 
 CSV Dataset – Cleaned OLA ride data
 
-📂 Project Structure
-├── ola_analysis_app_enhanced.py   # Main Streamlit application
-├── cleaned_ola_rides.csv          # Cleaned dataset
-├── README.md   # Project documentation
 
 
- Key Features
- Interactive Filters
+ ### Key Features
+Interactive Filters
 
 Date range selection
 
@@ -50,7 +46,7 @@ Payment method
 
 Free-text search (Booking ID, Customer ID, Pickup/Drop location)
 
- KPIs Displayed
+ ### KPIs Displayed
 
 Total Rides
 
@@ -60,7 +56,7 @@ Cancelled Rides
 
 Total Booking Value
 
- Visual Insights
+ ### Visual Insights
 
 Ride volume over time
 
@@ -78,12 +74,12 @@ Payment method distribution
 
 Top 5 customers by number of rides
 
- Data Export
+### Data Export
 
 Download filtered data as CSV
 
 
-🚀 How to Run the Project
+### 🚀 How to Run the Project
 1️⃣ Clone the Repository
 git clone https://github.com/USERNAME/REPO_NAME.git
 cd REPO_NAME
@@ -94,13 +90,13 @@ pip install streamlit pandas numpy plotly
 3️⃣ Run the Streamlit App
 streamlit run ola_analysis_app_enhanced.py
 
- Dataset Notes
+### Dataset Notes
 
 The dataset is assumed to be cleaned before analysis.
 
 Date columns are parsed and additional features like Hour, DayOfWeek, and Ride_Date are derived automatically.
 
- Use Cases
+### Use Cases
 
 Business performance analysis
 
@@ -110,7 +106,7 @@ Customer behavior analysis
 
 Portfolio project for Data Analyst / Data Science roles
 
- Future Enhancements
+### Future Enhancements
 
 Power BI or Tableau dashboard integration
 
@@ -120,6 +116,6 @@ City-wise or zone-wise analysis
 
 Deployment on Streamlit Cloud
 
- Author
+### Author
 Anoushka Thakur
 Aspiring Data Analyst | Python | SQL | Streamlit | Data Visualization
